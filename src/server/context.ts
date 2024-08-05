@@ -1,6 +1,6 @@
-import type { CreateNextContextOptions } from '@trpc/server/adapters/next';
-import type { CreateWSSContextFnOptions } from '@trpc/server/adapters/ws';
-import { getSession } from 'next-auth/react';
+import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
+import type { CreateWSSContextFnOptions } from "@trpc/server/adapters/ws";
+import { getSession } from "next-auth/react";
 
 /**
  * Creates context for an incoming request
@@ -11,7 +11,7 @@ export const createContext = async (
 ) => {
   const session = await getSession(opts);
 
-  console.log('createContext for', session?.user?.name ?? 'unknown user');
+  console.log("createContext for", session?.user?.name ?? "unknown user");
 
   return {
     session,

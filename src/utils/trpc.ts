@@ -1,17 +1,17 @@
-import type { TRPCLink } from '@trpc/client';
+import type { TRPCLink } from "@trpc/client";
 import {
   createWSClient,
   httpBatchLink,
   loggerLink,
   wsLink,
-} from '@trpc/client';
-import { createTRPCNext } from '@trpc/next';
-import { ssrPrepass } from '@trpc/next/ssrPrepass';
-import type { inferRouterOutputs } from '@trpc/server';
-import type { NextPageContext } from 'next';
-import getConfig from 'next/config';
-import type { AppRouter } from 'server/routers/_app';
-import superjson from 'superjson';
+} from "@trpc/client";
+import { createTRPCNext } from "@trpc/next";
+import { ssrPrepass } from "@trpc/next/ssrPrepass";
+import type { inferRouterOutputs } from "@trpc/server";
+import type { NextPageContext } from "next";
+import getConfig from "next/config";
+import type { AppRouter } from "server/routers/_app";
+import superjson from "superjson";
 
 // ℹ️ Type-only import:
 // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-export
@@ -21,7 +21,7 @@ const { publicRuntimeConfig } = getConfig();
 const { APP_URL, WS_URL } = publicRuntimeConfig;
 
 function getEndingLink(ctx: NextPageContext | undefined): TRPCLink<AppRouter> {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return httpBatchLink({
       /**
        * @link https://trpc.io/docs/v11/data-transformers
@@ -35,7 +35,7 @@ function getEndingLink(ctx: NextPageContext | undefined): TRPCLink<AppRouter> {
         // on ssr, forward client's headers to the server
         return {
           ...ctx.req.headers,
-          'x-ssr': '1',
+          "x-ssr": "1",
         };
       },
     });
@@ -76,9 +76,9 @@ export const trpc = createTRPCNext<AppRouter>({
         // adds pretty logs to your console in development and logs errors in production
         loggerLink({
           enabled: (opts) =>
-            (process.env.NODE_ENV === 'development' &&
-              typeof window !== 'undefined') ||
-            (opts.direction === 'down' && opts.result instanceof Error),
+            (process.env.NODE_ENV === "development" &&
+              typeof window !== "undefined") ||
+            (opts.direction === "down" && opts.result instanceof Error),
         }),
         getEndingLink(ctx),
       ],

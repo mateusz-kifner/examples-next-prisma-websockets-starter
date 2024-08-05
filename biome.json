@@ -27,7 +27,18 @@
           }
         }
       }
-    }
+    },
+    "ignore": [
+      "node_modules/*",
+      ".next/*",
+      ".uploads/*",
+      ".public/*",
+      ".expo/*",
+      ".expo-shared/*",
+      ".output/*",
+      ".nitro/*",
+      "dist/*"
+    ]
   },
   "formatter": {
     "enabled": true,

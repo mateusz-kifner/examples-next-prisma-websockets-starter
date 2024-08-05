@@ -1,13 +1,13 @@
-import { trpc } from '../utils/trpc';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import Head from 'next/head';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { trpc } from "../utils/trpc";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { signIn, signOut, useSession } from "next-auth/react";
+import Head from "next/head";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function AddMessageForm({ onMessagePost }: { onMessagePost: () => void }) {
   const addPost = trpc.post.add.useMutation();
   const { data: session } = useSession();
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [enterToPostMessage, setEnterToPostMessage] = useState(true);
   async function postMessage() {
     const input = {
@@ -15,7 +15,7 @@ function AddMessageForm({ onMessagePost }: { onMessagePost: () => void }) {
     };
     try {
       await addPost.mutateAsync(input);
-      setMessage('');
+      setMessage("");
       onMessagePost();
     } catch {}
   }
@@ -25,18 +25,20 @@ function AddMessageForm({ onMessagePost }: { onMessagePost: () => void }) {
   const userName = session?.user?.name;
   if (!userName) {
     return (
-      <div className="flex w-full justify-between rounded bg-gray-800 px-3 py-2 text-lg text-gray-200">
+      <div className="flex w-full justify-between rounded bg-gray-800 px-3 py-2 text-gray-200 text-lg">
         <p className="font-bold">
-          You have to{' '}
+          You have to{" "}
           <button
+            type="button"
             className="inline font-bold underline"
             onClick={() => signIn()}
           >
             sign in
-          </button>{' '}
+          </button>{" "}
           to write.
         </p>
         <button
+          type="button"
           onClick={() => signIn()}
           data-testid="signin"
           className="h-full rounded bg-indigo-500 px-4"
@@ -60,7 +62,7 @@ function AddMessageForm({ onMessagePost }: { onMessagePost: () => void }) {
         }}
       >
         <fieldset disabled={addPost.isPending} className="min-w-0">
-          <div className="flex w-full items-end rounded bg-gray-500 px-3 py-2 text-lg text-gray-200">
+          <div className="flex w-full items-end rounded bg-gray-500 px-3 py-2 text-gray-200 text-lg">
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -68,18 +70,19 @@ function AddMessageForm({ onMessagePost }: { onMessagePost: () => void }) {
               rows={message.split(/\r|\n/).length}
               id="text"
               name="text"
+              // biome-ignore lint/a11y/noAutofocus: <explanation>
               autoFocus
               onKeyDown={async (e) => {
-                if (e.key === 'Shift') {
+                if (e.key === "Shift") {
                   setEnterToPostMessage(false);
                 }
-                if (e.key === 'Enter' && enterToPostMessage) {
+                if (e.key === "Enter" && enterToPostMessage) {
                   void postMessage();
                 }
                 isTyping.mutate({ typing: true });
               }}
               onKeyUp={(e) => {
-                if (e.key === 'Shift') {
+                if (e.key === "Shift") {
                   setEnterToPostMessage(true);
                 }
               }}
@@ -96,7 +99,7 @@ function AddMessageForm({ onMessagePost }: { onMessagePost: () => void }) {
           </div>
         </fieldset>
         {addPost.error && (
-          <p style={{ color: 'red' }}>{addPost.error.message}</p>
+          <p style={{ color: "red" }}>{addPost.error.message}</p>
         )}
       </form>
     </>
@@ -115,7 +118,7 @@ export default function IndexPage() {
 
   // list of messages that are rendered
   const [messages, setMessages] = useState(() => {
-    const msgs = postsQuery.data?.pages.map((page) => page.items).flat();
+    const msgs = postsQuery.data?.pages.flatMap((page) => page.items);
     return msgs;
   });
   type Post = NonNullable<typeof messages>[number];
@@ -126,7 +129,7 @@ export default function IndexPage() {
   // fn to add and dedupe new messages onto state
   const addMessages = useCallback((incoming?: Post[]) => {
     setMessages((current) => {
-      const map: Record<Post['id'], Post> = {};
+      const map: Record<Post["id"], Post> = {};
       for (const msg of current ?? []) {
         map[msg.id] = msg;
       }
@@ -141,23 +144,24 @@ export default function IndexPage() {
 
   // when new data from `useInfiniteQuery`, merge with current state
   useEffect(() => {
-    const msgs = postsQuery.data?.pages.map((page) => page.items).flat();
+    const msgs = postsQuery.data?.pages.flatMap((page) => page.items);
     addMessages(msgs);
   }, [postsQuery.data?.pages, addMessages]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const scrollToBottomOfList = useCallback(() => {
     if (scrollTargetRef.current == null) {
       return;
     }
 
     scrollTargetRef.current.scrollIntoView({
-      behavior: 'smooth',
-      block: 'end',
+      behavior: "smooth",
+      block: "end",
     });
   }, [scrollTargetRef]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     scrollToBottomOfList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // subscribe to new posts and add
   trpc.post.onAdd.useSubscription(undefined, {
@@ -165,7 +169,7 @@ export default function IndexPage() {
       addMessages([post]);
     },
     onError(err) {
-      console.error('Subscription error:', err);
+      console.error("Subscription error:", err);
       // we might have missed a message - invalidate cache
       utils.post.infinite.invalidate();
     },
@@ -189,10 +193,10 @@ export default function IndexPage() {
           <div className="flex-1 overflow-y-hidden">
             <div className="flex h-full flex-col divide-y divide-gray-700">
               <header className="p-4">
-                <h1 className="text-3xl font-bold text-gray-50">
+                <h1 className="font-bold text-3xl text-gray-50">
                   tRPC WebSocket starter
                 </h1>
-                <p className="text-sm text-gray-400">
+                <p className="text-gray-400 text-sm">
                   Showcases WebSocket + subscription support
                   <br />
                   <a
@@ -207,7 +211,7 @@ export default function IndexPage() {
               </header>
               <div className="hidden flex-1 space-y-6 overflow-y-auto p-4 text-gray-400 md:block">
                 <article className="space-y-2">
-                  <h2 className="text-lg text-gray-200">Introduction</h2>
+                  <h2 className="text-gray-200 text-lg">Introduction</h2>
                   <ul className="list-inside list-disc space-y-2">
                     <li>Open inspector and head to Network tab</li>
                     <li>All client requests are handled through WebSockets</li>
@@ -219,10 +223,10 @@ export default function IndexPage() {
                 </article>
                 {userName && (
                   <article>
-                    <h2 className="text-lg text-gray-200">User information</h2>
+                    <h2 className="text-gray-200 text-lg">User information</h2>
                     <ul className="space-y-2">
                       <li className="text-lg">
-                        You&apos;re{' '}
+                        You&apos;re{" "}
                         <input
                           id="name"
                           name="name"
@@ -233,7 +237,9 @@ export default function IndexPage() {
                         />
                       </li>
                       <li>
-                        <button onClick={() => signOut()}>Sign Out</button>
+                        <button type="button" onClick={() => signOut()}>
+                          Sign Out
+                        </button>
                       </li>
                     </ul>
                   </article>
@@ -241,29 +247,30 @@ export default function IndexPage() {
               </div>
             </div>
           </div>
-          <div className="hidden h-16 shrink-0 md:block"></div>
+          <div className="hidden h-16 shrink-0 md:block" />
         </section>
         <div className="flex-1 overflow-y-hidden md:h-screen">
           <section className="flex h-full flex-col justify-end space-y-4 bg-gray-700 p-4">
             <div className="space-y-4 overflow-y-auto">
               <button
+                type="button"
                 data-testid="loadMore"
                 onClick={() => fetchNextPage()}
                 disabled={!hasNextPage || isFetchingNextPage}
                 className="rounded bg-indigo-500 px-4 py-2 text-white disabled:opacity-40"
               >
                 {isFetchingNextPage
-                  ? 'Loading more...'
+                  ? "Loading more..."
                   : hasNextPage
-                  ? 'Load More'
-                  : 'Nothing more to load'}
+                    ? "Load More"
+                    : "Nothing more to load"}
               </button>
               <div className="space-y-4">
                 {messages?.map((item) => (
                   <article key={item.id} className=" text-gray-50">
                     <header className="flex space-x-2 text-sm">
                       <h3 className="text-base">
-                        {item.source === 'RAW' ? (
+                        {item.source === "RAW" ? (
                           item.name
                         ) : (
                           <a
@@ -276,9 +283,9 @@ export default function IndexPage() {
                         )}
                       </h3>
                       <span className="text-gray-500">
-                        {new Intl.DateTimeFormat('en-GB', {
-                          dateStyle: 'short',
-                          timeStyle: 'short',
+                        {new Intl.DateTimeFormat("en-GB", {
+                          dateStyle: "short",
+                          timeStyle: "short",
                         }).format(item.createdAt)}
                       </span>
                     </header>
@@ -287,19 +294,19 @@ export default function IndexPage() {
                     </p>
                   </article>
                 ))}
-                <div ref={scrollTargetRef}></div>
+                <div ref={scrollTargetRef} />
               </div>
             </div>
             <div className="w-full">
               <AddMessageForm onMessagePost={() => scrollToBottomOfList()} />
-              <p className="h-2 italic text-gray-400">
+              <p className="h-2 text-gray-400 italic">
                 {currentlyTyping.length
-                  ? `${currentlyTyping.join(', ')} typing...`
-                  : ''}
+                  ? `${currentlyTyping.join(", ")} typing...`
+                  : ""}
               </p>
             </div>
 
-            {process.env.NODE_ENV !== 'production' && (
+            {process.env.NODE_ENV !== "production" && (
               <div className="hidden md:block">
                 <ReactQueryDevtools initialIsOpen={false} />
               </div>
